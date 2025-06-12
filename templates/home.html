@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+
+{% block title %}Home | Cloud OS{% endblock %}
+
+{% block content %}
+    <style>
+        .hero {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            margin-top: 3rem;
+            animation: fadeIn 1.5s ease;
+        }
+
+        .hero h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: #1e1e2f;
+        }
+
+        .hero p {
+            font-size: 1.1rem;
+            color: #555;
+            max-width: 600px;
+        }
+
+        .hero .btn {
+            margin-top: 2rem;
+            font-size: 1rem;
+        }
+
+        .features {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 4rem;
+            flex-wrap: wrap;
+            gap: 2rem;
+            animation: slideUp 1.2s ease;
+        }
+
+        .feature-box {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.08);
+            text-align: center;
+            width: 300px;
+            transition: transform 0.3s ease;
+        }
+
+        .feature-box:hover {
+            transform: translateY(-5px);
+        }
+
+        .feature-box i {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: #4f46e5;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(40px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+
+    <section class="hero">
+        <h2>Power Up Your Own OS in the Cloud</h2>
+        <p>Launch Windows, Kali Linux, or any custom OS in seconds. Save sessions, manage resources, and access your cloud desktop from anywhere.</p>
+        <a class="btn" href="{% url 'authentication:login' %}">Get Started</a>
+    </section>
+
+    <section class="features">
+        <div class="feature-box">
+            <i class="fa-solid fa-microchip"></i>
+            <h3>Custom Resources</h3>
+            <p>Choose your own CPU, RAM, and storage configuration for each VM.</p>
+        </div>
+        <div class="feature-box">
+            <i class="fa-solid fa-cloud-arrow-up"></i>
+            <h3>Persistent OS</h3>
+            <p>Save your OS state and resume exactly where you left off anytime.</p>
+        </div>
+        <div class="feature-box">
+            <i class="fa-solid fa-lock"></i>
+            <h3>Secure by Design</h3>
+            <p>Integrated security from the backend to the virtual machine level.</p>
+        </div>
+    </section>
+{% endblock %}

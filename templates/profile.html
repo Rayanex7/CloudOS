@@ -1,0 +1,654 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Profile - VirtualOS{% endblock %}
+
+{% block extra_css %}
+<style>
+    .profile-container {
+        display: flex;
+        gap: 2rem;
+        margin-top: 2rem;
+        min-height: 70vh;
+    }
+
+    .profile-sidebar {
+        width: 300px;
+        background: white;
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        padding: 0;
+        height: fit-content;
+        position: sticky;
+        top: 100px;
+    }
+
+    .profile-header {
+        text-align: center;
+        padding: 2rem;
+        border-bottom: 1px solid var(--light-gray);
+    }
+
+    .profile-avatar {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+        color: white;
+        font-size: 3rem;
+        font-weight: 600;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .profile-avatar::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%);
+        animation: shine 3s infinite;
+    }
+
+    @keyframes shine {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(100%); }
+    }
+
+    .profile-name {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--dark);
+        margin-bottom: 0.5rem;
+    }
+
+    .profile-email {
+        color: var(--text-light);
+        font-size: 0.9rem;
+    }
+
+    .profile-nav {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .profile-nav li {
+        border-bottom: 1px solid var(--light-gray);
+    }
+
+    .profile-nav li:last-child {
+        border-bottom: none;
+    }
+
+    .profile-nav a {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1.25rem 2rem;
+        text-decoration: none;
+        color: var(--text);
+        transition: var(--transition);
+        font-weight: 500;
+        position: relative;
+    }
+
+    .profile-nav a:hover {
+        background-color: rgba(67, 97, 238, 0.05);
+        color: var(--primary);
+    }
+
+    .profile-nav a.active {
+        background-color: rgba(67, 97, 238, 0.1);
+        color: var(--primary);
+        border-right: 3px solid var(--primary);
+    }
+
+    .profile-nav i {
+        width: 20px;
+        text-align: center;
+        font-size: 1.1rem;
+    }
+
+    .profile-content {
+        flex: 1;
+        background: white;
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        padding: 2rem;
+        animation: slideInRight 0.5s ease-out;
+    }
+
+    .section {
+        display: none;
+    }
+
+    .section.active {
+        display: block;
+        animation: fadeIn 0.3s ease-in;
+    }
+
+    .section-title {
+        font-size: 2rem;
+        color: var(--dark);
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid var(--light-gray);
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: var(--dark);
+    }
+
+    .form-group input {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 2px solid var(--light-gray);
+        border-radius: var(--radius);
+        font-size: 1rem;
+        transition: var(--transition);
+        background: white;
+    }
+
+    .form-group input:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid var(--light-gray);
+    }
+
+    .btn-save {
+        background: var(--success);
+        color: white;
+        border: 2px solid var(--success);
+    }
+
+    .btn-save:hover {
+        background: #059669;
+        border-color: #059669;
+    }
+
+    .btn-cancel {
+        background: var(--light-gray);
+        color: var(--text);
+        border: 2px solid var(--light-gray);
+    }
+
+    .btn-cancel:hover {
+        background: #d1d5db;
+        border-color: #d1d5db;
+    }
+
+    .vm-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .vm-card {
+        border: 2px solid var(--light-gray);
+        border-radius: var(--radius);
+        padding: 1.5rem;
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .vm-card:hover {
+        border-color: var(--primary);
+        box-shadow: var(--shadow-lg);
+        transform: translateY(-2px);
+    }
+
+    .vm-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+        background: var(--primary);
+        opacity: 0;
+        transition: var(--transition);
+    }
+
+    .vm-card:hover::before {
+        opacity: 1;
+    }
+
+    .vm-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1rem;
+    }
+
+    .vm-info h3 {
+        font-size: 1.25rem;
+        color: var(--dark);
+        margin-bottom: 0.25rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .vm-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0.25rem 0.75rem;
+        border-radius: 999px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .vm-status.running {
+        background: rgba(16, 185, 129, 0.1);
+        color: var(--success);
+    }
+
+    .vm-status.stopped {
+        background: rgba(239, 68, 68, 0.1);
+        color: var(--danger);
+    }
+
+    .vm-status.paused {
+        background: rgba(245, 158, 11, 0.1);
+        color: var(--warning);
+    }
+
+    .vm-specs {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+        padding: 1rem;
+        background: rgba(67, 97, 238, 0.02);
+        border-radius: var(--radius);
+        border: 1px solid rgba(67, 97, 238, 0.1);
+    }
+
+    .vm-spec {
+        text-align: center;
+    }
+
+    .vm-spec-value {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--primary);
+        display: block;
+    }
+
+    .vm-spec-label {
+        font-size: 0.85rem;
+        color: var(--text-light);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .vm-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+
+    .btn-vm {
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+        border-radius: var(--radius);
+        border: none;
+        cursor: pointer;
+        font-weight: 500;
+        transition: var(--transition);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+    }
+
+    .btn-vm.power-on {
+        background: var(--success);
+        color: white;
+    }
+
+    .btn-vm.power-off {
+        background: var(--danger);
+        color: white;
+    }
+
+    .btn-vm.modify {
+        background: var(--primary);
+        color: white;
+    }
+
+    .btn-vm.reset {
+        background: var(--warning);
+        color: white;
+    }
+
+    .btn-vm.delete {
+        background: #6b7280;
+        color: white;
+    }
+
+    .btn-vm:hover {
+        transform: translateY(-1px);
+        box-shadow: var(--shadow);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem 2rem;
+        color: var(--text-light);
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        color: var(--light-gray);
+        margin-bottom: 1rem;
+    }
+
+    .empty-state h3 {
+        font-size: 1.5rem;
+        margin-bottom: 0.5rem;
+        color: var(--text);
+    }
+
+    @media (max-width: 768px) {
+        .profile-container {
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .profile-sidebar {
+            width: 100%;
+            position: static;
+        }
+
+        .profile-header {
+            padding: 1.5rem;
+        }
+
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            font-size: 2rem;
+        }
+
+        .vm-specs {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .vm-actions {
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <!-- Profile Sidebar -->
+    <div class="profile-sidebar">
+        <div class="profile-header">
+            <div class="profile-avatar">
+                {{ user.username|first|upper }}
+            </div>
+            <div class="profile-name">{{ user.username|capfirst }}</div>
+            <div class="profile-email">{{ user.email }}</div>
+        </div>
+        
+        <ul class="profile-nav">
+            <li>
+                <a href="#" class="nav-link active" data-section="general">
+                    <i class="fas fa-user"></i>
+                    General Information
+                </a>
+            </li>
+            <li>
+                <a href="#" class="nav-link" data-section="virtual-machines">
+                    <i class="fas fa-server"></i>
+                    Virtual Machines
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Profile Content -->
+    <div class="profile-content">
+        <!-- General Information Section -->
+        <div class="section active" id="general">
+            <div class="section-title">
+                <i class="fas fa-user-edit"></i>
+                General Information
+            </div>
+            
+            <form method="POST" action="{% url 'base:profile' %}">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" value="{{ user.username }}" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" name="email" value="{{ user.email }}" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="current_password">Current Password</label>
+                    <input type="password" id="current_password" name="current_password" placeholder="Enter current password to make changes">
+                </div>
+                
+                <div class="form-group">
+                    <label for="new_password">New Password</label>
+                    <input type="password" id="new_password" name="new_password" placeholder="Leave blank to keep current password">
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-save">
+                        <i class="fas fa-save"></i>
+                        Save Changes
+                    </button>
+                    <button type="button" class="btn btn-cancel" onclick="resetForm()">
+                        <i class="fas fa-times"></i>
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Virtual Machines Section -->
+        <div class="section" id="virtual-machines">
+            <div class="section-title">
+                <i class="fas fa-server"></i>
+                Virtual Machines
+            </div>
+            
+            {% if user_vms %}
+                <div class="vm-list">
+                    {% for vm in user_vms %}
+                    <div class="vm-card">
+                        <div class="vm-header">
+                            <div class="vm-info">
+                                <h3>
+                                    {% if "ubuntu" in vm.os_type|lower %}
+                                    <i class="fab fa-ubuntu"></i>
+                                    {% elif "windows" in vm.os_type|lower %}
+                                    <i class="fab fa-windows"></i>
+                                    {% else %}
+                                    <i class="fas fa-server"></i>
+                                    {% endif %}
+                                    {{ vm.name }}
+                                </h3>
+                            </div>
+                            <span class="vm-status stopped">
+                                <i class="fas fa-circle"></i>
+                                Stopped
+                            </span>
+                        </div>
+
+                        <div class="vm-specs">
+                            <div class="vm-spec">
+                                <span class="vm-spec-value">{{ vm.cpu_cores }}</span>
+                                <span class="vm-spec-label">CPU Cores</span>
+                            </div>
+                            <div class="vm-spec">
+                                <span class="vm-spec-value">{% widthratio vm.ram_mb 1024 1 %} GB</span>
+                                <span class="vm-spec-label">RAM</span>
+                            </div>
+                            <div class="vm-spec">
+                                <span class="vm-spec-value">{{ vm.disk_gb }} GB</span>
+                                <span class="vm-spec-label">Storage</span>
+                            </div>
+                            <div class="vm-spec">
+                                <span class="vm-spec-value">{{ vm.os_type }}</span>
+                                <span class="vm-spec-label">OS Type</span>
+                            </div>
+                        </div>
+
+                        <div class="vm-actions">
+                            <a href="#" class="btn-vm power-on">
+                                <i class="fas fa-play"></i>
+                                Power On
+                            </a>
+                            <a href="#" class="btn-vm power-off">
+                                <i class="fas fa-power-off"></i>
+                                Power Off
+                            </a>
+                            <a href="#" class="btn-vm modify">
+                                <i class="fas fa-cog"></i>
+                                Modify Resources
+                            </a>
+                            <a href="#" class="btn-vm reset">
+                                <i class="fas fa-redo"></i>
+                                Reset VM
+                            </a>
+                            <a href="#" class="btn-vm delete">
+                                <i class="fas fa-trash"></i>
+                                Delete VM
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-server"></i>
+                    <h3>No Virtual Machines</h3>
+                    <p>You haven't created any virtual machines yet.</p>
+                    <a href="{% url 'base:os_library' %}" class="btn btn-outline" style="margin-top: 1rem;">
+                        <i class="fas fa-plus"></i>
+                        Create Your First VM
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Profile navigation
+    document.querySelectorAll('.nav-link').forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Remove active class from all nav links and sections
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            
+            // Add active class to clicked nav link
+            this.classList.add('active');
+            
+            // Show corresponding section
+            const sectionId = this.getAttribute('data-section');
+            document.getElementById(sectionId).classList.add('active');
+        });
+    });
+
+    // Display the message as a pop-up if it exists
+    document.addEventListener("DOMContentLoaded", function () {
+        const message = "{{ message|escapejs }}";
+        if (message) {
+            alert(message); // Show the message in a pop-up
+        }
+    });
+
+    // Form validation and handling
+    function resetForm() {
+        const form = document.querySelector('form');
+        form.reset();
+        // Reset to original values
+        document.getElementById('username').value = '{{ user.username }}';
+        document.getElementById('email').value = '{{ user.email }}';
+    }
+
+    // VM action handlers
+    document.querySelectorAll('.btn-vm').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const action = this.textContent.trim();
+            const vmName = this.closest('.vm-card').querySelector('h3').textContent.trim();
+            
+            if (action.includes('Delete')) {
+                if (confirm(`Are you sure you want to delete "${vmName}"? This action cannot be undone.`)) {
+                    // Handle delete action
+                    console.log(`Deleting VM: ${vmName}`);
+                }
+            } else if (action.includes('Reset')) {
+                if (confirm(`Are you sure you want to reset "${vmName}"? All unsaved data will be lost.`)) {
+                    // Handle reset action
+                    console.log(`Resetting VM: ${vmName}`);
+                }
+            } else {
+                // Handle other actions (Power On/Off, Modify, etc.)
+                console.log(`${action} for VM: ${vmName}`);
+            }
+        });
+    });
+
+    // Form submission handling
+    document.querySelector('form').addEventListener('submit', function(e) {
+        const newPassword = document.getElementById('new_password').value;
+        const confirmPassword = document.getElementById('confirm_password');
+        
+        if (confirmPassword && newPassword && newPassword !== confirmPassword.value) {
+            e.preventDefault();
+            alert('New passwords do not match!');
+            return false;
+        }
+        
+        if (!document.getElementById('current_password').value) {
+            e.preventDefault();
+            alert('Please enter your current password to make changes.');
+            return false;
+        }
+    });
+</script>
+{% endblock %}

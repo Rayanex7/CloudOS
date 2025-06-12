@@ -1,0 +1,200 @@
+{% extends 'base.html' %}
+{% block title %}User Authentication | Cloud OS{% endblock %}
+
+{% block content %}
+{% if message %}
+  <div id="popup-message" style="color: #fff; background: #4f46e5; padding: 1em; border-radius: 8px; margin-bottom: 1em; text-align: center;">
+    {{ message }}
+  </div>
+  <script>
+    setTimeout(() => {
+      document.getElementById('popup-message').style.display = 'none';
+    }, 3000); // after 3 seconds
+  </script>
+{% endif %}
+<style>
+  .auth-wrapper {
+    max-width: 450px;
+    margin: 4rem auto;
+    background: white;
+    padding: 2.5rem 3rem;
+    border-radius: 12px;
+    box-shadow: 0 6px 25px rgba(0,0,0,0.1);
+    animation: fadeIn 0.7s ease forwards;
+  }
+
+  .tab-buttons {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 2rem;
+  }
+  .tab-buttons button {
+    background: none;
+    border: none;
+    padding: 10px 20px;
+    font-weight: 600;
+    font-size: 1.1rem;
+    cursor: pointer;
+    color: #666;
+    border-bottom: 3px solid transparent;
+    transition: all 0.3s ease;
+  }
+  .tab-buttons button.active {
+    color: #4f46e5;
+    border-bottom: 3px solid #4f46e5;
+  }
+
+  form {
+    display: none;
+    animation: fadeIn 0.6s ease forwards;
+  }
+  form.active {
+    display: block;
+  }
+
+  form input {
+    width: 100%;
+    padding: 12px;
+    margin-top: 1rem;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 1rem;
+  }
+
+  form button {
+    margin-top: 1.8rem;
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    border: none;
+    background: #4f46e5;
+    color: white;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+  form button:hover {
+    background: #4338ca;
+  }
+
+  .form-footer {
+    margin-top: 1rem;
+    text-align: center;
+    font-size: 0.9rem;
+    color: #444;
+  }
+  .form-footer a {
+    color: #4f46e5;
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  @keyframes fadeIn {
+    from {opacity: 0; transform: translateY(10px);}
+    to {opacity: 1; transform: translateY(0);}
+  }
+</style>
+
+<div class="auth-wrapper">
+  <div class="tab-buttons">
+    <button id="btn-login">Login</button>
+    <button id="btn-register">Register</button>
+    <button id="btn-forgot">Forgot Password</button>
+  </div>
+
+  <!-- LOGIN FORM -->
+  <form method="POST" action="{% url 'authentication:login' %}" id="form-login" class="active">
+    {% csrf_token %}
+    <input type="hidden" name="action_type" value="login">
+    <input type="text" name="username" placeholder="Username">
+    <input type="password" name="password" placeholder="Password" required>
+    <button type="submit">Login</button>
+    <div class="form-footer">
+      Don't have an account? <a href="{% url 'authentication:login' %}" id="link-to-register">Register</a> <br>
+      <a href="#" id="link-to-forgot">Forgot Password?</a>
+    </div>
+  </form>
+
+  <!-- REGISTER FORM -->
+  <form method="POST" action="{% url 'authentication:login' %}" id="form-register">
+    {% csrf_token %}
+    <input type="hidden" name="action_type" value="signup">
+    <input type="text" name="username" placeholder="Username" required>
+    <input type="email" name="email" placeholder="Email" required>
+    <input type="password" name="password" placeholder="Password" required>
+    {% if error_message %}
+      <div class="error-message">{{ error_message }}</div>
+    {% endif %}
+    <button type="submit">Register</button>
+    <div class="form-footer">
+      Already have an account? <a href="{% url 'authentication:login' %}"  id="link-to-login-from-register">Login</a>
+    </div>
+  </form>
+
+  <!-- FORGOT PASSWORD FORM -->
+  <form method="POST" action="{% url 'authentication:login' %}" id="form-forgot">
+    {% csrf_token %}
+    <input type="hidden" name="action_type" value="forgot_password">
+    <input type="username" name="username" placeholder="Enter your username" required>
+    <button type="submit">Send Reset Link</button>
+    <div class="form-footer">
+      Remember your password? <a href="{% url 'authentication:login' %}" id="link-to-login-from-forgot">Login</a>
+    </div>
+  </form>
+</div>
+
+<script>
+  const btnLogin = document.getElementById('btn-login');
+  const btnRegister = document.getElementById('btn-register');
+  const btnForgot = document.getElementById('btn-forgot');
+
+  const formLogin = document.getElementById('form-login');
+  const formRegister = document.getElementById('form-register');
+  const formForgot = document.getElementById('form-forgot');
+
+  const linkToRegister = document.getElementById('link-to-register');
+  const linkToForgot = document.getElementById('link-to-forgot');
+  const linkToLoginFromRegister = document.getElementById('link-to-login-from-register');
+  const linkToLoginFromForgot = document.getElementById('link-to-login-from-forgot');
+
+  function showForm(formToShow) {
+    [formLogin, formRegister, formForgot].forEach(f => f.classList.remove('active'));
+    [btnLogin, btnRegister, btnForgot].forEach(b => b.classList.remove('active'));
+
+    if(formToShow === 'login') {
+      formLogin.classList.add('active');
+      btnLogin.classList.add('active');
+    }
+    else if(formToShow === 'register') {
+      formRegister.classList.add('active');
+      btnRegister.classList.add('active');
+    }
+    else if(formToShow === 'forgot') {
+      formForgot.classList.add('active');
+      btnForgot.classList.add('active');
+    }
+  }
+
+  btnLogin.onclick = () => showForm('login');
+  btnRegister.onclick = () => showForm('register');
+  btnForgot.onclick = () => showForm('forgot');
+
+  linkToRegister.onclick = e => {
+    e.preventDefault();
+    showForm('register');
+  };
+  linkToForgot.onclick = e => {
+    e.preventDefault();
+    showForm('forgot');
+  };
+  linkToLoginFromRegister.onclick = e => {
+    e.preventDefault();
+    showForm('login');
+  };
+  linkToLoginFromForgot.onclick = e => {
+    e.preventDefault();
+    showForm('login');
+  };
+</script>
+{% endblock %}

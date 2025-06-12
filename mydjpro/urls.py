@@ -1,6 +1,3 @@
-from django.contrib import admin
-from django.urls import path
-from django.http import HttpResponse
 """
 URL configuration for mydjpro project.
 
@@ -18,16 +15,13 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
-
-def help(request):
-    return HttpResponse('Support Page')
-
-def home(request):
-    return HttpResponse('Home Page')
+from django.urls import path, include
+from django.contrib.auth import views as auth_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('meliodas/', home),
-    path('help/', help)
+    path('password_reset_done/', auth_views.PasswordResetDoneView.as_view(), name='password_reset_done'),
+    path('password_reset_complete/', auth_views.PasswordResetCompleteView.as_view(), name='password_reset_complete'),
+    path('', include('base.urls', 'base'), name='base'),
+    path('', include('authentication.urls', 'authentication'), name='authentication'),
 ]
