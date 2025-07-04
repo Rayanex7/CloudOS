@@ -2,88 +2,55 @@
 {% load static %}
 
 {% block content %}
-<h2 class="text-2xl font-bold mb-4">Your Virtual Machine</h2>
+<script type="module">
+    // On importe directement le client VNC
+    import RFB from "{% static 'core/rfb.js' %}";
 
-<!-- Simple iframe approach - most reliable -->
-<iframe 
-    src="http://{{ vnc_host }}:{{ vnc_port }}/vnc.html?host={{ vnc_host }}&port={{ vnc_port }}&autoconnect=true&resize=scale&reconnect=true"
-    style="width:100%; height:600px; border:2px solid #444; border-radius:10px; background:#000;"
-    allowfullscreen>
-</iframe>
+    // On récupère les éléments de la page
+    const screenContainer = document.getElementById('vnc-screen');
+    const fullscreenButton = document.getElementById('fullscreen-button');
 
-<div style="margin-top: 10px; color: #666; font-size: 14px;">
-    <p><strong>Controls:</strong></p>
-    <ul style="margin-left: 20px;">
-        <li>Click inside the frame to interact with the VM</li>
-        <li>Use Ctrl+Alt+Shift to release mouse capture</li>
-        <li>Settings panel available in the top-left corner</li>
-    </ul>
-</div>
+    // On récupère les variables de connexion envoyées par Django
+    const protocol = "{{ vnc_protocol }}"; // Sera 'ws' ou 'wss'
+    const host = "{{ vnc_host }}";         // Sera 'CloudOS.ma'
+    const port = "{{ vnc_port }}";         // Le port du proxy (ex: 6080)
 
-<!-- Fallback: Direct RFB connection -->
-<div id="fallback" style="display: none;">
-    <h3>Alternative Connection</h3>
-    <div id="noVNC_container" style="width:100%; height:600px; background:#000; border:2px solid #444; border-radius:10px;">
-        <div id="loading" style="color: white; text-align: center; padding: 50px;">Connecting to VNC...</div>
-    </div>
-</div>
+    // On construit l'URL de connexion WebSocket finale que Nginx va intercepter
+    // Exemple d'URL : "ws://CloudOS.ma/websockify/6080/"
+    const url = `${protocol}://${host}/websockify/${port}/`;
 
-<script>
-    // Check if iframe loads successfully, if not show fallback
-    const iframe = document.querySelector('iframe');
-    const fallback = document.getElementById('fallback');
-    
-    iframe.onerror = function() {
-        console.error("Iframe failed to load, showing fallback");
-        iframe.style.display = 'none';
-        fallback.style.display = 'block';
-        
-        // Initialize direct RFB connection as fallback
-        initDirectRFB();
-    };
-    
-    // Optional: Add a button to switch to direct connection
-    const switchButton = document.createElement('button');
-    switchButton.textContent = 'Switch to Direct Connection';
-    switchButton.style.marginTop = '10px';
-    switchButton.style.padding = '8px 16px';
-    switchButton.style.backgroundColor = '#007bff';
-    switchButton.style.color = 'white';
-    switchButton.style.border = 'none';
-    switchButton.style.borderRadius = '4px';
-    switchButton.style.cursor = 'pointer';
-    
-    switchButton.onclick = function() {
-        iframe.style.display = 'none';
-        fallback.style.display = 'block';
-        initDirectRFB();
-    };
-    
-    document.querySelector('.text-2xl').parentNode.appendChild(switchButton);
-    
-    function initDirectRFB() {
-        // This would require loading noVNC scripts first
-        const container = document.getElementById('noVNC_container');
-        const loading = document.getElementById('loading');
-        
-        const wsHost = "{{ vnc_host }}";
-        const wsPort = "{{ vnc_port }}";
-        const wsURL = "ws://" + wsHost + ":" + wsPort + "/websockify";
-        
-        console.log("Attempting direct RFB connection to:", wsURL);
-        
-        // For now, just show connection info
-        if (loading) {
-            loading.innerHTML = `
-                <div style="color: white; text-align: center; padding: 50px;">
-                    <p>Direct RFB connection would go here</p>
-                    <p>WebSocket URL: ${wsURL}</p>
-                    <p>You can manually navigate to: <br>
-                    <a href="http://${wsHost}:${wsPort}/vnc.html" target="_blank" 
-                       style="color: #007bff;">http://${wsHost}:${wsPort}/vnc.html</a></p>
-                </div>
-            `;
+    console.log(`Attempting to connect to VNC via: ${url}`);
+
+    // On initialise la connexion VNC
+    let rfb = new RFB(screenContainer, url, {
+        // Vous pouvez passer des identifiants ici si votre VNC a un mot de passe
+        // credentials: { password: "your-vnc-password" } 
+    });
+
+    // Gestion du bouton plein écran
+    fullscreenButton.addEventListener('click', () => {
+        if (screenContainer.requestFullscreen) {
+            screenContainer.requestFullscreen();
+        } else if (screenContainer.mozRequestFullScreen) { /* Firefox */
+            screenContainer.mozRequestFullScreen();
+        } else if (screenContainer.webkitRequestFullscreen) { /* Chrome, Safari & Opera */
+            screenContainer.webkitRequestFullscreen();
+        } else if (screenContainer.msRequestFullscreen) { /* IE/Edge */
+            screenContainer.msRequestFullscreen();
         }
-    }
+    });
+
 </script>
+
+<div class="flex justify-between items-center mb-4">
+    <h2 class="text-2xl font-bold">Your Virtual Machine</h2>
+    
+    <button id="fullscreen-button" style="padding: 8px 16px; background-color: #4361EE; color: white; border: none; border-radius: 4px; cursor: pointer;">
+        <i class="fas fa-expand"></i> Enter Fullscreen
+    </button>
+</div>
+
+<div id="vnc-screen" style="width: 100%; height: 600px; background-color: #000; border: 2px solid #444; border-radius: 10px;">
+    </div>
+
 {% endblock %}

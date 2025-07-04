@@ -31,7 +31,7 @@ SECRET_KEY = 'django-insecure-0ardoy3!5rvfxby3jfj@8%9+lc2^p-y3s_z951b3(d(6^#d#m3
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['192.168.1.9', 'CloudOS.ma', '192.168.203.236']
 
 LOGIN_REDIRECT_URL = '/'
 

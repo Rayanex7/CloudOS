@@ -532,7 +532,7 @@
                         </div>
 
                         <div class="vm-actions">
-                            <a href="#" class="btn-vm power-on">
+                            <a href="{% url 'base:start_vm' %}" class="btn-vm power-on">
                                 <i class="fas fa-play"></i>
                                 Power On
                             </a>
@@ -609,29 +609,40 @@
         document.getElementById('email').value = '{{ user.email }}';
     }
 
-    // VM action handlers
+    // ==================== CORRECTED VM ACTION HANDLERS ====================
     document.querySelectorAll('.btn-vm').forEach(button => {
         button.addEventListener('click', function(e) {
+            // If the button is the "Power On" button, do nothing and let the link work.
+            // The 'power-on' class is the key differentiator.
+            if (this.classList.contains('power-on')) {
+                return;
+            }
+
+            // For all other buttons (Delete, Reset, etc.), prevent the link from being followed
+            // so we can handle the action with JavaScript.
             e.preventDefault();
+
             const action = this.textContent.trim();
             const vmName = this.closest('.vm-card').querySelector('h3').textContent.trim();
             
             if (action.includes('Delete')) {
                 if (confirm(`Are you sure you want to delete "${vmName}"? This action cannot be undone.`)) {
-                    // Handle delete action
+                    // In a real application, you would make an AJAX call or redirect to a delete URL here.
+                    // For example: window.location.href = this.href;
                     console.log(`Deleting VM: ${vmName}`);
                 }
             } else if (action.includes('Reset')) {
                 if (confirm(`Are you sure you want to reset "${vmName}"? All unsaved data will be lost.`)) {
-                    // Handle reset action
+                    // Handle reset action (e.g., via an AJAX call)
                     console.log(`Resetting VM: ${vmName}`);
                 }
             } else {
-                // Handle other actions (Power On/Off, Modify, etc.)
+                // Handle other actions (Power Off, Modify, etc.)
                 console.log(`${action} for VM: ${vmName}`);
             }
         });
     });
+    // =====================================================================
 
     // Form submission handling
     document.querySelector('form').addEventListener('submit', function(e) {
@@ -644,9 +655,11 @@
             return false;
         }
         
-        if (!document.getElementById('current_password').value) {
+        // This logic seems incorrect. You probably want to ask for the password only if the password is being changed.
+        // Consider adjusting this logic based on your requirements.
+        if (document.getElementById('new_password').value && !document.getElementById('current_password').value) {
             e.preventDefault();
-            alert('Please enter your current password to make changes.');
+            alert('Please enter your current password to set a new one.');
             return false;
         }
     });
