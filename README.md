@@ -113,3 +113,5 @@ MIT License — free to use, modify, and distribute.
 ---
 
 > Made with 💻 by [Rayane](https://github.com/Rayanex7)
+> © 2026 Rayane LYACHA. All Rights Reserved.
+This repository and its contents are proprietary. No one is permitted to use, copy, modify, or distribute this code without explicit written permission from the author.
